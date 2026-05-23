@@ -57,7 +57,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         await connectDb()
         let dbUser = await User.findOne({email:user.email})
         if(!dbUser){
-          await User.create({
+        dbUser =  await User.create({
             name:user.name,
             email:user.email
           })
