@@ -1,4 +1,5 @@
 import connectDb from "@/lib/db";
+import { sendMail } from "@/lib/sendMail";
 import User from "@/models/user.model";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
@@ -8,12 +9,15 @@ export async function POST(req:NextRequest) {
     const {name,email,password} = await req.json()
     await connectDb()
     let user = await User.findOne({email})
-    if (user) {
+    if (user && user.isEmailVerified ) {
       return NextResponse.json(
         {message:"email already exist"},
         {status:400}
       )
     }
+
+      const otp = Math.floor(100000+Math.random()*900000).toString()
+      const otpExpiresAt = new Date(Date.now()+10*60*1000)
 
       if (password.length<6) {
       return NextResponse.json(
@@ -21,13 +25,43 @@ export async function POST(req:NextRequest) {
         {status:400}
       )
     }
-    const hashedPassword = await bcrypt.hash(password,10)
 
-    user = await User.create({
+
+
+    const hashedPassword = await bcrypt.hash(password,10)
+    if(user && !user.isEmailVerified){
+       user.name=name
+       user.password=hashedPassword
+       user.email=email
+        user.otp=otp,
+        user.otpExpiresAt=otpExpiresAt
+        await user.save()
+    }else{
+       user = await User.create({
         name,
         email ,
-        password:hashedPassword
+        password:hashedPassword,
+        otp,
+        otpExpiresAt
     })
+    }
+
+      await sendMail(
+  email,
+  "OTP Verification",
+  `
+  <div style="font-family:sans-serif;">
+    <h2>Your OTP Code</h2>
+    <p>Your verification OTP is:</p>
+
+    <h1 style="letter-spacing:5px;">${otp}</h1>
+
+    <p>This OTP will expire in 10 minutes.</p>
+  </div>
+  `
+)
+
+   
 
      return NextResponse.json(
         user,

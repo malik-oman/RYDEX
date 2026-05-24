@@ -25,6 +25,7 @@ const AuthModel = ({open,onClose}:propType) => {
   const [password,setPassword] = useState("")
 
   const [err,setErr] = useState("")
+  const [otp,setOtp] = useState(["","","","","",""])
 
   const {data} = useSession()
 
@@ -34,6 +35,7 @@ const AuthModel = ({open,onClose}:propType) => {
       const {data} = await axios.post("/api/auth/register", {
         name,email,password
       })
+       setStep("otp")
         setLoading(false)
     } catch (error:any) {
         setLoading(false)
@@ -42,6 +44,25 @@ const AuthModel = ({open,onClose}:propType) => {
      
     }
   }
+
+  
+  const handleVerifyEmail = async () => {
+    setLoading(true)
+    try {
+      const {data} = await axios.post("/api/auth/verify-email", {
+        email,otp:otp.join("")
+      })
+       setStep("login")
+        setLoading(false)
+        setOtp(["","","","","",""])
+    } catch (error:any) {
+        setLoading(false)
+      console.log(error)
+      setErr(error.response.data.message ?? "something went wrong")
+     
+    }
+  }
+
 
    const handleLogin = async () => {
     setLoading(true)
@@ -54,6 +75,24 @@ const AuthModel = ({open,onClose}:propType) => {
    const handleGoogleLogin = async () => {
     await signIn("google")
    }
+
+    const handleChangeOtp = (index: number, value: string) => {
+  if (!/^[0-9]?$/.test(value)) return
+  const updated = [...otp]
+  updated[index] = value
+  setOtp(updated)
+
+  if (value && index < otp.length - 1) {
+    document.getElementById(`otp-${index + 1}`)?.focus()
+  }
+}
+
+
+const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+  if (e.key === "Backspace" && !otp[index] && index > 0) {
+    document.getElementById(`otp-${index - 1}`)?.focus()
+  }
+}
 
 
   return (
@@ -158,13 +197,43 @@ const AuthModel = ({open,onClose}:propType) => {
 
                 {err && <p className='text-red-500'>*{err}</p>}
 
-                <button disabled={loading} onClick={handleSignUp} className='w-full flex justify-center items-center h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition'>{!loading?"Sign Up":<CircleDashed size={18} color='white' className='animate-spin'/>}</button>
+                <button  disabled={loading} onClick={handleSignUp} className='w-full flex justify-center items-center h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition'>{!loading?"Send Otp":<CircleDashed size={18} color='white' className='animate-spin'/>}</button>
 
               </div>
               <p className='mt-6 text-center text-sm text-gray-500'>Already have an account? <div onClick={()=>setStep("login")} className='text-black font-medium hover:underline cursor-pointer'>Login</div></p>
 
             </motion.div>
           )}  
+
+          {/* =================================OTP=============================== */}
+
+          {step == "otp" && (
+            <motion.div
+            key='otp'
+              initial={{opacity:0, x:20}}
+            animate={{opacity:1,x:0}}
+            exit={{opacity:0, x:-20}}
+            >
+              <h2 className='text-xl font-semibold '>Verify Email</h2>
+
+              <div className='mt-6 flex justify-between gap-2'>
+                {otp.map((digit,i)=>(
+                  <input key={i} id={`otp-${i}`}
+                  value={digit}
+                  maxLength={1}
+                  className='w-10 h-12 sm:w-12 text-center text-lg font-semibold rounded-xl bg-white border border-black/20 outline-none'
+                  onChange={(e)=>handleChangeOtp(i,e.target.value)}
+                  onKeyDown={(e)=>handleKeyDown(e,i)}
+                  />
+
+                  
+                ))}
+              </div>
+                  {err && <p className='text-red-500'>*{err}</p>}
+              <button onClick={handleVerifyEmail} className='mt-6 flex justify-center items-center w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition'>{!loading?"Verify Your Account":<CircleDashed size={18} color='white' className='animate-spin'/>}</button>
+
+            </motion.div>
+          )}
            </div>
 
           </div>
