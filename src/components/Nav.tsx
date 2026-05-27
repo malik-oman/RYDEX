@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import AuthModel from "./AuthModel";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -32,6 +32,8 @@ const Nav = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const router = useRouter()
 
   const dispatch = useDispatch();
 
@@ -180,6 +182,7 @@ const Nav = () => {
                         <div className="p-3">
                           {userData.role !== "partner" && (
                             <motion.button
+                              onClick={()=>router.push("/partner/onboarding/vehicle")}
                               whileHover={{ x: 4 }}
                               className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors duration-200 group cursor-pointer"
                             >
@@ -383,6 +386,7 @@ const Nav = () => {
                 <div className="space-y-2">
                   {userData.role !== "partner" && (
                     <motion.button
+                    onClick={()=>router.push("/partner/onboarding/vehicle")}
                       whileTap={{ scale: 0.98 }}
                       className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors duration-200"
                     >

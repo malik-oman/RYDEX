@@ -13,8 +13,16 @@ import {
   Clock,
   Star,
 } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { useRouter } from "next/navigation";
 
 const HeroSection = ({ onAuthRequired }: { onAuthRequired: () => void }) => {
+
+  const {userData} = useSelector((state:RootState)=>state.user)
+
+  const router = useRouter()
+
   // Floating animation for icons
   const floatAnimation = {
     y: [0, -10, 0],
@@ -189,7 +197,7 @@ const HeroSection = ({ onAuthRequired }: { onAuthRequired: () => void }) => {
   whileHover={{ scale: 1.08, y: -4 }}
   whileTap={{ scale: 0.92 }}
   transition={{ type: "spring", stiffness: 400, damping: 15 }}
-  onClick={onAuthRequired}
+  onClick={()=> { userData ? router.push("/user/book") : onAuthRequired()}}
   className="relative group px-10 py-4 bg-white text-slate-900 rounded-full font-bold text-lg shadow-2xl shadow-white/10 hover:shadow-white/25 transition-shadow duration-300 cursor-pointer overflow-hidden"
 >
   <span className="relative z-10 flex items-center gap-2">
