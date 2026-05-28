@@ -3,7 +3,7 @@ import { auth } from "./auth"
 
 
   const PUBLIC_ROUTES = ["/"]
-  const PUBLIC_APIS = ["/api/auth"]
+
 
 export async function proxy(req:NextRequest) {
 
@@ -19,7 +19,7 @@ export async function proxy(req:NextRequest) {
   if(PUBLIC_ROUTES.includes(pathname)){
     return NextResponse.next()
   }
-  if(PUBLIC_APIS.includes(pathname)){
+  if(pathname.startsWith("/api/auth")){
     return NextResponse.next()
   }
 
@@ -45,7 +45,7 @@ export async function proxy(req:NextRequest) {
     }
 
     if(pathname.startsWith("/api")){
-      if(!session.user){
+      if(!session || !session.user){
         return Response.json({
           message:"unauthorize"
         },{status:401})
