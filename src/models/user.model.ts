@@ -8,7 +8,8 @@ import mongoose, { Document } from "mongoose";
   isEmailVerified?:boolean
   otp?:string,
   otpExpiresAt?:Date,
-  partnerOnBoardingSteps:number
+  partnerOnBoardingSteps:number,
+  mobileNumber?:string
   createdAt:Date;
   updatedAt:Date;
 }
@@ -42,6 +43,9 @@ const useSchema = new mongoose.Schema<IUser>({
     max:8,
     default:0
   },
+   mobileNumber:{
+      type:String
+   },
   otp:{
     type:String
   },

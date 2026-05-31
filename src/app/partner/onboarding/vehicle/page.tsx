@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react'
 import { motion } from 'motion/react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, CircleDashed } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Bike, Car, Truck, Bus, TruckElectric } from "lucide-react";
+import axios from 'axios'
 
 const VEHICLES = [
   {
@@ -46,6 +47,27 @@ const page = () => {
   const [vehicleType, setVehicleType] = useState("")
   const [vehicleNumber, setVehicleNumber] = useState("")
   const [vehicleModel, setVehicleModel] = useState("")
+  const [loading,setLoading] = useState(false)
+
+  const [error,setError] = useState("")
+
+
+
+  const handleVehicle = async () => {
+    setError("")
+        try {
+          setLoading(true)
+          const {data} = await axios.post("/api/partner/onboarding/vehicle",
+            {type:vehicleType, number:vehicleNumber, vehicleModel}
+          )
+           setLoading(false)
+       
+        } catch (error:any) {
+          setError(error?.response?.data?.message ?? "something went wrong")
+       
+               setLoading(false)
+        }
+  }
 
   return (
     <div className='min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8'>
@@ -112,7 +134,7 @@ const page = () => {
             <label className='text-xs font-semibold text-gray-400 tracking-wide' htmlFor="vn">Vehicle Number</label>
             <input
               value={vehicleNumber}
-              onChange={(e) => setVehicleNumber(e.target.value)}
+              onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
               type="text"
               id='vn'
               className='mt-2 w-full border-b border-gray-200 pb-2.5 text-sm text-gray-800 focus:outline-none focus:border-gray-900 transition-colors duration-200 bg-transparent' placeholder='MH123ABY67' />
@@ -129,11 +151,17 @@ const page = () => {
           </div>
         </div>
 
+
+          {error && <p className='text-red-500 mt-4'>{error}</p>}      
+        
+
         <motion.button
+        onClick={handleVehicle}
+        disabled={loading}
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.98 }}
           className='mt-8 w-full h-12 rounded-xl bg-gray-900 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition-all duration-200 cursor-pointer hover:bg-gray-800'
-        >Continue</motion.button>
+        >{loading?<CircleDashed className='text-white animate-spin'/>:"Continue"}</motion.button>
       </motion.div>
     </div>
   )

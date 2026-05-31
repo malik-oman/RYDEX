@@ -1,0 +1,5 @@
+{
+    "[typescriptreact]": {
+        "js/ts.suggest.completeFunctionCalls": true
+    }
+}

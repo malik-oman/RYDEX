@@ -1,13 +1,57 @@
 "use client"
 
-import React from 'react'
+import React, { useState } from 'react'
 import {motion} from 'motion/react'
-import { ArrowLeft, UploadCloud,FileCheck } from 'lucide-react'
+import { ArrowLeft, UploadCloud,FileCheck, CircleDashed } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import axios from 'axios'
+
+type docsType="cnic"|"license"|"rc"
 
 function page() {
 
 const router = useRouter()
+
+const [docs,setDocs] = useState<Record<docsType, File | null>>({
+  cnic:null,
+  license:null,
+  rc:null
+})
+
+const [loading,setLoading] = useState(false)
+const [error,setError] = useState("")
+
+const handleDocs = async () => {
+  setLoading(true)
+  setError("")
+    try {
+      const formdata = new FormData()
+      if(!docs.cnic || !docs.license || !docs.rc){
+        return 
+          setError("all documents are required")
+          setLoading(false)
+          return null
+        
+      }
+       formdata.append("cnic", docs.cnic) 
+       formdata.append("license", docs.license) 
+       formdata.append("rc", docs.rc) 
+
+      const {data} = await axios.post("/api/partner/onboarding/documents",formdata)
+       setLoading(false)
+    } catch (error:any) {
+      setError(error?.response?.data?.message ?? "something went wrong")
+      console.log(error)
+      setLoading(false)
+    }
+}
+
+const handleImage = (doc:docsType, file:File | null) => {
+  if(!file){
+    return
+  }
+  setDocs((prev)=>({...prev,[doc]:file}))
+}
 
   return (
     <div className='min-h-screen bg-white flex items-center justify-center px-4'>
@@ -55,6 +99,8 @@ const router = useRouter()
               <span className='text-xs text-gray-400'>Upload</span>
               <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'><UploadCloud size={18}/></div>
             </div>
+            
+          <input type="file" hidden accept='image/*,.pdf' onChange={(e)=>handleImage("cnic",e.target?.files?.[0] || null)}  />
 
           </motion.label>
           
@@ -72,6 +118,8 @@ const router = useRouter()
               <span className='text-xs text-gray-400'>Upload</span>
               <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'><UploadCloud size={18}/></div>
             </div>
+
+             <input type="file" hidden accept='image/*,.pdf' onChange={(e)=>handleImage("license",e.target?.files?.[0] || null)}  />
             
           </motion.label>
 
@@ -89,8 +137,11 @@ const router = useRouter()
               <span className='text-xs text-gray-400'>Upload</span>
               <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'><UploadCloud size={18}/></div>
             </div>
+
+             <input type="file" hidden accept='image/*,.pdf' onChange={(e)=>handleImage("rc",e.target?.files?.[0] || null)}  />
             
           </motion.label>
+
           
         </div>
 
@@ -99,12 +150,16 @@ const router = useRouter()
             <p>Documents are securely stored and manually verified by our team.</p>
         </div>
 
+          {error && <p className='text-red-500 mt-4'>{error}</p>}  
+
         <motion.button
+        onClick={handleDocs}
+        disabled={loading}
         whileHover={{scale:1.02}}
         whileTap={{scale:0.97}}
         className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition'
         >
-          Continue
+          {loading?<CircleDashed className='text-white animate-spin'/>:"Continue"}
         </motion.button>
 
       </motion.div>

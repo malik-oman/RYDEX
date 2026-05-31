@@ -82,6 +82,7 @@ export async function POST(req:NextRequest) {
          
     
   } catch (error) {
+        
        return Response.json(
               {message:`partner docs error${error}`}, {status:500}
             )
